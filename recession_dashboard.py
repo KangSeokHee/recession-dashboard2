@@ -1,7 +1,112 @@
+
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
 from datetime import datetime, timedelta
+
+# ---------------------- 사용자 정보 ----------------------
+if "USERS" not in st.session_state:
+    st.session_state.USERS = {
+        "user1@example.com": "password123",
+        "test@naver.com": "abc123",
+    }
+
+# ---------------------- 로그인 상태 저장 ----------------------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "current_user" not in st.session_state:
+    st.session_state.current_user = None
+
+# ---------------------- 로그인 화면 ----------------------
+def show_login():
+    st.set_page_config(page_title="로그인", layout="centered")
+    st.title("🔐 로그인 필요")
+    email = st.text_input("이메일 입력")
+    password = st.text_input("비밀번호 입력", type="password")
+
+    if st.button("로그인"):
+        if email in st.session_state.USERS and st.session_state.USERS[email] == password:
+            st.session_state.logged_in = True
+            st.session_state.current_user = email
+            st.success(f"환영합니다, {email}님!")
+            st.rerun()
+        else:
+            st.error("이메일 또는 비밀번호가 올바르지 않습니다.")
+
+    st.markdown("---")
+    if st.button("회원가입 하러가기"):
+        st.session_state.page = "register"
+        st.rerun()
+
+# ---------------------- 회원가입 화면 ----------------------
+def show_register():
+    st.title("📝 회원가입")
+    new_email = st.text_input("새 이메일 입력")
+    new_password = st.text_input("새 비밀번호 입력", type="password")
+
+    if st.button("회원가입 완료"):
+        if new_email in st.session_state.USERS:
+            st.error("이미 존재하는 이메일입니다.")
+        else:
+            st.session_state.USERS[new_email] = new_password
+            st.success("회원가입이 완료되었습니다. 로그인 해주세요!")
+            st.session_state.page = "login"
+            st.rerun()
+
+    if st.button("로그인 화면으로 돌아가기"):
+        st.session_state.page = "login"
+        st.rerun()
+
+# ---------------------- 메인 대시보드 ----------------------
+def show_dashboard():
+    st.set_page_config(page_title="침체 고점 포착 대시보드", layout="wide")
+    st.title("📉 침체 고점 포착 대시보드")
+    st.caption("📊 실시간 나스닥 지수, 미국 실업률, 공포지수(VIX), 기준금리를 추적합니다.")
+
+    st.sidebar.success(f"🔓 로그인 계정: {st.session_state.current_user}")
+    if st.sidebar.button("로그아웃"):
+        st.session_state.logged_in = False
+        st.session_state.current_user = None
+        st.session_state.page = "login"
+        st.rerun()
+
+    오늘 = datetime.today()
+    시작일 = 오늘 - timedelta(days=180)
+    나스닥 = yf.download("^IXIC", start=시작일, end=오늘)
+    VIX = yf.download("^VIX", start=시작일, end=오늘)
+
+    예시_실업률 = [3.6, 3.8, 4.0, 4.2, 4.3, 4.4]
+    예시_금리 = [5.25, 5.25, 5.25, 5.25, 5.25, 5.00]
+    예시_날짜 = ["2024년 10월", "2024년 11월", "2024년 12월", "2025년 1월", "2025년 2월", "2025년 3월"]
+
+    좌측, 우측 = st.columns(2)
+    with 좌측:
+        st.subheader("🟢 나스닥(NASDAQ) 지수")
+        fig1 = go.Figure()
+        fig1.add_trace(go.Scatter(x=나스닥.index, y=나스닥['Close'], mode='lines', name='NASDAQ'))
+        fig1.update_layout(height=300)
+        st.plotly_chart(fig1, use_container_width=True)
+
+    with 우측:
+        st.subheader("🔴 공포지수 (VIX)")
+        fig2 = go.Figure()
+        fig2.add_trace(go.Scatter(x=VIX.index, y=VIX['Close'], mode='lines', name='VIX', line=dict(color='red')))
+        fig2.update_layout(height=300)
+        st.plotly_chart(fig2, use_container_width=True)
+
+# ---------------------- 페이지 라우팅 ----------------------
+if "page" not in st.session_state:
+    st.session_state.page = "login"
+
+if st.session_state.page == "login":
+    show_login()
+elif st.session_state.page == "register":
+    show_register()
+elif st.session_state.logged_in:
+    show_dashboard()
+else:
+    show_login()
+
 
 # ---------------------- 사용자 정보 ----------------------
 USERS = {
