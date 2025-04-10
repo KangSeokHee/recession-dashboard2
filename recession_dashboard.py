@@ -25,7 +25,7 @@ if not st.session_state.logged_in:
         if email in USERS and USERS[email] == password:
             st.session_state.logged_in = True
             st.success(f"환영합니다, {email}님!")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("이메일 또는 비밀번호가 올바르지 않습니다.")
     st.stop()
