@@ -106,22 +106,20 @@ def show_dashboard():
     fig4.add_trace(go.Bar(x=예시_날짜, y=예시_금리, marker_color='blue'))
     st.plotly_chart(fig4, use_container_width=True)
 
-    # --- 요약 메시지 ---
     st.markdown("---")
     st.success("✅ 기준금리가 인하되고, 실업률이 하락하며, VIX가 안정되면 침체 고점 가능성이 높아집니다.")
 
-# ---------------------- 라우팅 ----------------------
+# ---------------------- 페이지 라우팅 ----------------------
 if "page" not in st.session_state:
     st.session_state.page = "login"
 
-if st.session_state.page == "login":
-    show_login()
-elif st.session_state.page == "register":
-    show_register()
-elif st.session_state.logged_in:
-    show_dashboard()
+if not st.session_state.logged_in:
+    if st.session_state.page == "register":
+        show_register()
+    else:
+        show_login()
 else:
-    show_login()
+    show_dashboard()
     
 # --- 대응 전략 섹션 추가 ---
 st.subheader("📌 현재 침체 가능성에 대한 대응 전략")
