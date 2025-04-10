@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 USERS = {
     "user1@example.com": "password123",
     "test@naver.com": "abc123",
+    "sukhee1015@naver.com": "rkdtjrgml"
     # 이메일:비밀번호 추가 가능
 }
 
