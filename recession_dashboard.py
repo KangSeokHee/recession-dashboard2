@@ -3,6 +3,35 @@ import yfinance as yf
 import plotly.graph_objs as go
 from datetime import datetime, timedelta
 
+# ---------------------- 사용자 정보 ----------------------
+USERS = {
+    "user1@example.com": "password123",
+    "test@naver.com": "abc123",
+    # 이메일:비밀번호 추가 가능
+}
+
+# ---------------------- 로그인 처리 ----------------------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.set_page_config(page_title="로그인", layout="centered")
+    st.title("🔐 로그인 필요")
+    email = st.text_input("이메일 입력")
+    password = st.text_input("비밀번호 입력", type="password")
+    
+    if st.button("로그인"):
+        if email in USERS and USERS[email] == password:
+            st.session_state.logged_in = True
+            st.success(f"환영합니다, {email}님!")
+            st.experimental_rerun()
+        else:
+            st.error("이메일 또는 비밀번호가 올바르지 않습니다.")
+    st.stop()
+
+# ---------------------- 로그인 성공 시 대시보드 ----------------------
+
+
 # --- 페이지 설정 ---
 st.set_page_config(page_title="침체 고점 포착 대시보드", layout="wide")
 st.title("📉 침체 고점 포착 대시보드")
