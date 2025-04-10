@@ -9,6 +9,7 @@ if "USERS" not in st.session_state:
     st.session_state.USERS = {
         "user1@example.com": "password123",
         "test@naver.com": "abc123",
+        "sukhee1015@naver.com": "rkdtjrgml"
     }
 
 # ---------------------- 로그인 상태 저장 ----------------------
