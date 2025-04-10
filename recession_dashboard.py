@@ -3,7 +3,7 @@ import yfinance as yf
 import plotly.graph_objs as go
 from datetime import datetime, timedelta
 
-# ✅ 페이지 설정은 무조건 맨 위에서 한 번만 실행
+# ✅ 페이지 설정은 맨 위에서 딱 한 번
 st.set_page_config(page_title="침체 고점 포착 대시보드", layout="wide")
 
 # ---------------------- 사용자 정보 ----------------------
@@ -11,9 +11,10 @@ if "USERS" not in st.session_state:
     st.session_state.USERS = {
         "user1@example.com": "password123",
         "test@naver.com": "abc123",
+        "sukhee1015@naver.com": "rkdtjrgml"
     }
 
-# ---------------------- 로그인 상태 저장 ----------------------
+# ---------------------- 로그인 상태 ----------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "current_user" not in st.session_state:
@@ -58,7 +59,7 @@ def show_register():
         st.session_state.page = "login"
         st.rerun()
 
-# ---------------------- 메인 대시보드 ----------------------
+# ---------------------- 대시보드 ----------------------
 def show_dashboard():
     st.title("📉 침체 고점 포착 대시보드")
     st.caption("📊 실시간 나스닥 지수, 미국 실업률, 공포지수(VIX), 기준금리를 추적합니다.")
@@ -94,7 +95,22 @@ def show_dashboard():
         fig2.update_layout(height=300)
         st.plotly_chart(fig2, use_container_width=True)
 
-# ---------------------- 페이지 라우팅 ----------------------
+    # --- 실업률/금리 그래프 ---
+    st.subheader("🟠 미국 실업률 (예시)")
+    fig3 = go.Figure()
+    fig3.add_trace(go.Bar(x=예시_날짜, y=예시_실업률, marker_color='orange'))
+    st.plotly_chart(fig3, use_container_width=True)
+
+    st.subheader("🔵 미국 기준금리 (예시)")
+    fig4 = go.Figure()
+    fig4.add_trace(go.Bar(x=예시_날짜, y=예시_금리, marker_color='blue'))
+    st.plotly_chart(fig4, use_container_width=True)
+
+    # --- 요약 메시지 ---
+    st.markdown("---")
+    st.success("✅ 기준금리가 인하되고, 실업률이 하락하며, VIX가 안정되면 침체 고점 가능성이 높아집니다.")
+
+# ---------------------- 라우팅 ----------------------
 if "page" not in st.session_state:
     st.session_state.page = "login"
 
@@ -106,96 +122,7 @@ elif st.session_state.logged_in:
     show_dashboard()
 else:
     show_login()
-
-
-
-# ---------------------- 사용자 정보 ----------------------
-USERS = {
-    "user1@example.com": "password123",
-    "test@naver.com": "abc123",
-    "sukhee1015@naver.com": "rkdtjrgml"
-    # 이메일:비밀번호 추가 가능
-}
-
-# ---------------------- 로그인 처리 ----------------------
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    st.set_page_config(page_title="로그인", layout="centered")
-    st.title("🔐 로그인 필요")
-    email = st.text_input("이메일 입력")
-    password = st.text_input("비밀번호 입력", type="password")
     
-    if st.button("로그인"):
-        if email in USERS and USERS[email] == password:
-            st.session_state.logged_in = True
-            st.success(f"환영합니다, {email}님!")
-            st.rerun()
-        else:
-            st.error("이메일 또는 비밀번호가 올바르지 않습니다.")
-    st.stop()
-
-# ---------------------- 로그인 성공 시 대시보드 ----------------------
-
-
-# --- 페이지 설정 ---
-st.set_page_config(page_title="침체 고점 포착 대시보드", layout="wide")
-st.title("📉 침체 고점 포착 대시보드")
-st.caption("📊 실시간 나스닥 지수, 미국 실업률, 공포지수(VIX), 기준금리를 추적합니다.")
-
-# --- 날짜 범위 설정 ---
-오늘 = datetime.today()
-시작일 = 오늘 - timedelta(days=180)
-
-# --- Yahoo Finance에서 데이터 가져오기 ---
-나스닥 = yf.download("^IXIC", start=시작일, end=오늘)
-VIX = yf.download("^VIX", start=시작일, end=오늘)
-
-# --- 실업률과 금리는 예시 값으로 대체 (실시간 연동은 추후 가능) ---
-예시_실업률 = [3.6, 3.8, 4.0, 4.2, 4.3, 4.4]  # 수동 입력 예시
-예시_금리 = [5.25, 5.25, 5.25, 5.25, 5.25, 5.00]
-예시_날짜 = ["2024년 10월", "2024년 11월", "2024년 12월", 
-           "2025년 1월", "2025년 2월", "2025년 3월"]
-
-
-# --- 레이아웃 나누기 ---
-좌측, 우측 = st.columns(2)
-
-# --- 나스닥 그래프 ---
-with 좌측:
-    st.subheader("🟢 나스닥(NASDAQ) 지수")
-    fig1 = go.Figure()
-    fig1.add_trace(go.Scatter(x=나스닥.index, y=나스닥['Close'], mode='lines', name='NASDAQ'))
-    fig1.update_layout(height=300, margin=dict(l=10, r=10, t=30, b=30))
-    st.plotly_chart(fig1, use_container_width=True)
-
-# --- 공포지수(VIX) ---
-with 우측:
-    st.subheader("🔴 공포지수 (VIX)")
-    fig2 = go.Figure()
-    fig2.add_trace(go.Scatter(x=VIX.index, y=VIX['Close'], mode='lines', name='VIX', line=dict(color='red')))
-    fig2.update_layout(height=300, margin=dict(l=10, r=10, t=30, b=30))
-    st.plotly_chart(fig2, use_container_width=True)
-
-# --- 미국 실업률 예시 ---
-st.subheader("🟠 미국 실업률 (예시)")
-fig3 = go.Figure()
-fig3.add_trace(go.Bar(x=예시_날짜, y=예시_실업률, name='실업률', marker_color='orange'))
-fig3.update_layout(height=250, margin=dict(l=10, r=10, t=30, b=30), yaxis_title="실업률 (%)")
-st.plotly_chart(fig3, use_container_width=True)
-
-# --- 미국 기준금리 예시 ---
-st.subheader("🔵 미국 기준금리 (예시)")
-fig4 = go.Figure()
-fig4.add_trace(go.Bar(x=예시_날짜, y=예시_금리, name='기준금리', marker_color='blue'))
-fig4.update_layout(height=250, margin=dict(l=10, r=10, t=30, b=30), yaxis_title="기준금리 (%)")
-st.plotly_chart(fig4, use_container_width=True)
-
-# --- 요약 메시지 ---
-st.markdown("---")
-st.success("✅ 기준금리가 인하되고, 실업률이 하락하며, VIX가 안정되면 침체 고점 가능성이 높아집니다.")
-
 # --- 대응 전략 섹션 추가 ---
 st.subheader("📌 현재 침체 가능성에 대한 대응 전략")
 
