@@ -20,7 +20,6 @@ if "current_user" not in st.session_state:
 
 # ---------------------- 로그인 화면 ----------------------
 def show_login():
-    st.set_page_config(page_title="로그인", layout="centered")
     st.title("🔐 로그인 필요")
     email = st.text_input("이메일 입력")
     password = st.text_input("비밀번호 입력", type="password")
